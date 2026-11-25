@@ -1,30 +1,44 @@
 package org.ikigaidigital;
 
+import org.ikigaidigital.interest.InterestPolicy;
+import org.ikigaidigital.interest.InterestPolicyRegistry;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+/**
+ * Shared calculator used across the application. Its public contract -
+ * {@link #updateBalance(List)} - is unchanged from the original
+ * implementation; only the internal plan-type conditionals were replaced
+ * with a Strategy pattern ({@link InterestPolicy}) so that new plan types
+ * can be added without touching this class (Open/Closed Principle).
+ *
+ * Behavior (including the rounding quirk via {@code new BigDecimal(double)})
+ * is intentionally preserved to avoid any change in output.
+ */
 public class TimeDepositCalculator {
+
+    private final InterestPolicyRegistry interestPolicyRegistry;
+
+    public TimeDepositCalculator() {
+        this(new InterestPolicyRegistry());
+    }
+
+    public TimeDepositCalculator(InterestPolicyRegistry interestPolicyRegistry) {
+        this.interestPolicyRegistry = interestPolicyRegistry;
+    }
+
     public void updateBalance(List<TimeDeposit> xs) {
         for (int i = 0; i < xs.size(); i++) {
-            double interest = 0;
+            TimeDeposit timeDeposit = xs.get(i);
 
-            if (xs.get(i).getDays() > 30) {
-                if (xs.get(i).getPlanType().equals("student")) {
-                    if (xs.get(i).getDays() < 366) {
-                        interest += xs.get(i).getBalance() * 0.03 / 12;
-                    }
-                } else if (xs.get(i).getPlanType().equals("premium")) {
-                    if (xs.get(i).getDays() > 45) {
-                        interest += xs.get(i).getBalance() * 0.05 / 12;
-                    }
-                } else if (xs.get(i).getPlanType().equals("basic")) {
-                    interest += xs.get(i).getBalance() * 0.01 / 12;
-                }
-            }
+            InterestPolicy interestPolicy = interestPolicyRegistry.resolve(timeDeposit.getPlanType());
+            double interest = interestPolicy.calculateMonthlyInterest(timeDeposit);
 
-            double a2d = xs.get(i).getBalance() + (new BigDecimal(interest).setScale(2, RoundingMode.HALF_UP)).doubleValue();
-            xs.get(i).setBalance(a2d);
+            double a2d = timeDeposit.getBalance() + (new BigDecimal(interest).setScale(2, RoundingMode.HALF_UP)).doubleValue();
+            timeDeposit.setBalance(a2d);
         }
     }
 }
+
