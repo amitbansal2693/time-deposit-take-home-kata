@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Field scopes for TimeDepositResponse, selected with ?scope=<name> on GET /api/v1/time-deposits.
+  Scope names must match the Scope enum constants (lower-cased); this is verified at startup.
+  A scope lists its attributes and may extend another scope, or set allAttributes="true" to
+  include every field automatically. Attribute names must match TimeDepositResponse components.
+-->
+<dto name="TimeDepositResponse" defaultScope="default">
+    <scope name="basic">
+        <attribute name="id"/>
+        <attribute name="planType"/>
+        <attribute name="balance"/>
+    </scope>
+    <scope name="default" extends="basic">
+        <attribute name="days"/>
+        <attribute name="withdrawals"/>
+    </scope>
+    <scope name="full" allAttributes="true"/>
+</dto>
+

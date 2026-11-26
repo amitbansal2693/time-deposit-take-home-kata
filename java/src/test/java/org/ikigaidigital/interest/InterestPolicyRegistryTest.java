@@ -10,10 +10,15 @@ class InterestPolicyRegistryTest {
     private final InterestPolicyRegistry registry = new InterestPolicyRegistry();
 
     @Test
-    void resolvesKnownPlanTypes_caseInsensitively() {
+    void resolvesKnownPlanTypes() {
         assertThat(registry.resolve("basic")).isInstanceOf(BasicInterestPolicy.class);
-        assertThat(registry.resolve("STUDENT")).isInstanceOf(StudentInterestPolicy.class);
-        assertThat(registry.resolve("Premium")).isInstanceOf(PremiumInterestPolicy.class);
+        assertThat(registry.resolve("student")).isInstanceOf(StudentInterestPolicy.class);
+        assertThat(registry.resolve("premium")).isInstanceOf(PremiumInterestPolicy.class);
+    }
+
+    @Test
+    void matchesPlanTypesExactly_likeTheOriginalCalculator() {
+        assertThat(registry.resolve("STUDENT")).isInstanceOf(NoInterestPolicy.class);
     }
 
     @Test

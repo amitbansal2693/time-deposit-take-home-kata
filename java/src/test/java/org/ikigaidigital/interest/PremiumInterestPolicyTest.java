@@ -11,12 +11,12 @@ class PremiumInterestPolicyTest {
     private final PremiumInterestPolicy policy = new PremiumInterestPolicy();
 
     @Test
-    void noInterest_onOrBeforeDay45() {
+    void calculateMonthlyInterest_whenOnOrBeforeDay45_thenZero() {
         assertThat(policy.calculateMonthlyInterest(new TimeDeposit(1, "premium", 1000.0, 45))).isZero();
     }
 
     @Test
-    void interestApplied_afterDay45() {
+    void calculateMonthlyInterest_whenAfterDay45_thenFivePercentMonthly() {
         double interest = policy.calculateMonthlyInterest(new TimeDeposit(1, "premium", 1200.0, 46));
         assertThat(interest).isCloseTo(1200.0 * 0.05 / 12, within(1e-9));
     }

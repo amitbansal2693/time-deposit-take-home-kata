@@ -2,24 +2,20 @@ package org.ikigaidigital.interest;
 
 import org.ikigaidigital.TimeDeposit;
 
-/**
- * Student Plan: 3% annual interest, applied monthly, starting after the
- * first 30 days and stopping once the deposit has been held for 1 year
- * (366 days or more, matching the original business rule).
- */
-public class StudentInterestPolicy implements InterestPolicy {
+import static org.ikigaidigital.common.TimeDepositConstants.INTEREST_FREE_DAYS;
+import static org.ikigaidigital.common.TimeDepositConstants.MONTHS_PER_YEAR;
+import static org.ikigaidigital.common.TimeDepositConstants.STUDENT_ANNUAL_RATE;
+import static org.ikigaidigital.common.TimeDepositConstants.STUDENT_MAX_DAYS_EXCLUSIVE;
 
-    private static final double ANNUAL_RATE = 0.03;
-    private static final int MIN_DAYS_EXCLUSIVE = 30;
-    private static final int MAX_DAYS_EXCLUSIVE = 366;
+public class StudentInterestPolicy implements InterestPolicy {
 
     @Override
     public double calculateMonthlyInterest(TimeDeposit timeDeposit) {
         int days = timeDeposit.getDays();
-        if (days <= MIN_DAYS_EXCLUSIVE || days >= MAX_DAYS_EXCLUSIVE) {
+        if (days <= INTEREST_FREE_DAYS || days >= STUDENT_MAX_DAYS_EXCLUSIVE) {
             return 0;
         }
-        return timeDeposit.getBalance() * ANNUAL_RATE / 12;
+        return timeDeposit.getBalance() * STUDENT_ANNUAL_RATE / MONTHS_PER_YEAR;
     }
 }
 

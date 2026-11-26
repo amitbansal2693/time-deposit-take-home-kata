@@ -1,20 +1,20 @@
 package org.ikigaidigital.application.port.out;
 
 import org.ikigaidigital.TimeDeposit;
-import org.ikigaidigital.domain.Withdrawal;
+import org.ikigaidigital.application.port.in.TimeDepositView;
 
 import java.util.List;
-import java.util.Map;
 
-/**
- * Outbound port implemented by the persistence adapter. Keeps the
- * application layer free of JPA/database concerns.
- */
 public interface TimeDepositRepositoryPort {
 
-    List<TimeDeposit> findAllTimeDeposits();
+    /** All deposits with their withdrawals, ordered by id, loaded in a single query. */
+    List<TimeDepositView> findAllWithWithdrawals();
 
-    Map<Integer, List<Withdrawal>> findWithdrawalsGroupedByTimeDepositIds(List<Integer> timeDepositIds);
+    /** Up to {@code limit} deposits with id greater than {@code afterId}, with withdrawals, ordered by id. */
+    List<TimeDepositView> findPageWithWithdrawals(int afterId, int limit);
+
+    /** Next batch of deposits with id greater than {@code lastId}, ordered by id (keyset pagination). */
+    List<TimeDeposit> findBatchAfterId(int lastId, int batchSize);
 
     void saveBalances(List<TimeDeposit> timeDeposits);
 }

@@ -4,10 +4,6 @@ import org.ikigaidigital.application.port.in.TimeDepositView;
 
 import java.util.List;
 
-/**
- * Response shape for GET /api/time-deposits, matching the schema required
- * by the assignment: id, planType, balance, days, withdrawals.
- */
 public record TimeDepositResponse(
         int id,
         String planType,

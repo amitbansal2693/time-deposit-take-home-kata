@@ -1,21 +1,16 @@
 package org.ikigaidigital;
 
-import org.ikigaidigital.interest.InterestPolicy;
 import org.ikigaidigital.interest.InterestPolicyRegistry;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static org.ikigaidigital.common.TimeDepositConstants.MONEY_SCALE;
+
 /**
- * Shared calculator used across the application. Its public contract -
- * {@link #updateBalance(List)} - is unchanged from the original
- * implementation; only the internal plan-type conditionals were replaced
- * with a Strategy pattern ({@link InterestPolicy}) so that new plan types
- * can be added without touching this class (Open/Closed Principle).
- *
- * Behavior (including the rounding quirk via {@code new BigDecimal(double)})
- * is intentionally preserved to avoid any change in output.
+ * Public contract and results are identical to the original implementation;
+ * the plan-type if/else chain was replaced by {@link InterestPolicyRegistry}.
  */
 public class TimeDepositCalculator {
 
@@ -30,13 +25,13 @@ public class TimeDepositCalculator {
     }
 
     public void updateBalance(List<TimeDeposit> xs) {
-        for (int i = 0; i < xs.size(); i++) {
-            TimeDeposit timeDeposit = xs.get(i);
+        for (TimeDeposit timeDeposit : xs) {
+            double interest = interestPolicyRegistry.resolve(timeDeposit.getPlanType())
+                    .calculateMonthlyInterest(timeDeposit);
 
-            InterestPolicy interestPolicy = interestPolicyRegistry.resolve(timeDeposit.getPlanType());
-            double interest = interestPolicy.calculateMonthlyInterest(timeDeposit);
-
-            double a2d = timeDeposit.getBalance() + (new BigDecimal(interest).setScale(2, RoundingMode.HALF_UP)).doubleValue();
+            // new BigDecimal(double) is kept on purpose to reproduce the original rounding exactly.
+            double a2d = timeDeposit.getBalance()
+                    + new BigDecimal(interest).setScale(MONEY_SCALE, RoundingMode.HALF_UP).doubleValue();
             timeDeposit.setBalance(a2d);
         }
     }

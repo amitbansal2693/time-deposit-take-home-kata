@@ -2,21 +2,18 @@ package org.ikigaidigital.interest;
 
 import org.ikigaidigital.TimeDeposit;
 
-/**
- * Basic Plan: 1% annual interest, applied monthly, starting after the
- * first 30 days (strictly more than 30 days held).
- */
-public class BasicInterestPolicy implements InterestPolicy {
+import static org.ikigaidigital.common.TimeDepositConstants.BASIC_ANNUAL_RATE;
+import static org.ikigaidigital.common.TimeDepositConstants.INTEREST_FREE_DAYS;
+import static org.ikigaidigital.common.TimeDepositConstants.MONTHS_PER_YEAR;
 
-    private static final double ANNUAL_RATE = 0.01;
-    private static final int MIN_DAYS_EXCLUSIVE = 30;
+public class BasicInterestPolicy implements InterestPolicy {
 
     @Override
     public double calculateMonthlyInterest(TimeDeposit timeDeposit) {
-        if (timeDeposit.getDays() <= MIN_DAYS_EXCLUSIVE) {
+        if (timeDeposit.getDays() <= INTEREST_FREE_DAYS) {
             return 0;
         }
-        return timeDeposit.getBalance() * ANNUAL_RATE / 12;
+        return timeDeposit.getBalance() * BASIC_ANNUAL_RATE / MONTHS_PER_YEAR;
     }
 }
 

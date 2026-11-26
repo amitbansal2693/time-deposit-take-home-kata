@@ -7,6 +7,13 @@ package org.ikigaidigital.application.port.in;
  */
 public interface UpdateAllTimeDepositBalancesUseCase {
 
-    void updateAllBalances();
+    /**
+     * @param idempotencyKey optional; if a run with the same key was already applied, nothing changes.
+     */
+    BalanceUpdateResult updateAllBalances(String idempotencyKey);
+
+    default BalanceUpdateResult updateAllBalances() {
+        return updateAllBalances(null);
+    }
 }
 
