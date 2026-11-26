@@ -1,72 +1,94 @@
-# Time Deposit Refactoring Kata - Take-Home Assignment
+# Time Deposit Service — Solution
 
-## XA Bank Time Deposit
+A refactor of the XA Bank time-deposit kata into a scalable Spring Boot service with a clean
+hexagonal architecture. The original assignment is preserved in [`java/Readme.md`](java/Readme.md).
 
-### Context
-A junior developer implemented domain logic for a time deposit system but did not complete the API functionality. Your task is to refactor the existing codebase to implement all required functionalities based on the provided business requirements, ensuring no breaking changes occur.
+> The Java solution lives in the [`java/`](java) folder. Run all commands from there.
 
-### Requirements
+## What it does
 
-1. **API Endpoints**:
-    - Create a RESTful API endpoint to update the balances of all time deposits in the database.
-    - Create a RESTful API endpoint to retrieve all time deposits.
-        - The GET endpoint should return a list of all time deposits with the following schema:
-            - `id`
-            - `planType`
-            - `balance`
-            - `days`
-            - `withdrawals`
+Exactly two REST endpoints:
 
-2. **Database Setup**:
-    - Store all time deposit plans in a database.
-    - Define the following tables:
-        - `timeDeposits`:
-            - `id`: Integer (primary key)
-            - `planType`: String (required)
-            - `days`: Integer (required)
-            - `balance`: Decimal (required)
-        - `withdrawals`:
-            - `id`: Integer (primary key)
-            - `timeDepositId`: Integer (foreign key, required)
-            - `amount`: Decimal (required)
-            - `date`: Date (required)
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/v1/time-deposits` | List all time deposits with their withdrawals (keyset pagination and field `scope` optional). |
+| `PUT` | `/api/v1/time-deposits/balances` | Apply one month of interest to every deposit, in batches. |
 
-3. **Interest Calculation**:
-    - Implement logic to calculate monthly interest based on the plan type:
-        - **Basic Plan**: 1% interest
-        - **Student Plan**: 3% interest (no interest after 1 year)
-        - **Premium Plan**: 5% interest (interest starts after 45 days)
-    - No interest is applied for the first 30 days for any existing plans.
+Interest per plan: **Basic** 1%, **Student** 3% (none after 1 year), **Premium** 5% (starts after day 45);
+no interest in the first 30 days. The shared `TimeDeposit` class and `TimeDepositCalculator.updateBalance`
+signature are unchanged.
 
-4. **Refactoring Constraints**:
-    - Do not introduce breaking changes to the shared `TimeDeposit` class or modify the `updateBalance` method signature.
-    - Ensure the design is extensible to accommodate future complexities in interest calculations.
+## Setup
 
-5. **Code Quality**:
-    - Adhere to SOLID principles, design patterns, and clean code practices where applicable.
+- Java 17+
+- Maven 3.9+
+- Docker (optional — only for the PostgreSQL profile / Testcontainers test)
 
-6. **AI-Assisted Development**:
-    - Set up an AI harness or agent workflow and use it throughout the development for this take-home exercise.
-    - Briefly document the tools and setup used (e.g., LLMs, coding assistants, agentic frameworks, configuration).
-    - Ensure your AI setup is practical and reproducible.
-    - Include any custom rules, system prompts, or agent configurations used.
-    - Include a brief summary of which parts of the solution were AI-assisted and why.
+## Build and test
 
-### Important Guidelines
-- The existing `TimeDepositCalculator.updateBalance` method is functioning correctly. Ensure its behavior remains unchanged after refactoring.
-- The final solution must include **exactly two API endpoints**. Do not develop additional endpoints.
-- **Do not** create a pull request or a new branch in the ikigai-digital repository. Instead, fork the repository into your own GitHub repository and develop the solution there.
-- Handling invalid input or exceptions is not required.
-- Use any tools, frameworks, or libraries you find suitable.
-- In case of ambiguity, make logical assumptions and justify them in code comments.
+```bash
+cd java
+mvn clean verify
+```
 
-### Preferred Stack
-- Use an OpenAPI Swagger contract.
-- Embrace Hexagonal Architecture.
-- Follow atomic commit practices.
-- Utilize testcontainers.
-- Leverage AI-assisted development tools for code generation, testing, and refactoring.
+## Run
 
-### Submission Instructions
-- Provide clear instructions on how to trigger the endpoints using the Swagger contract.
-- Email the link to your public GitHub repository.
+```bash
+cd java
+mvn spring-boot:run            # in-memory H2 (default "local" profile)
+```
+
+PostgreSQL profile:
+
+```bash
+cd java
+docker compose up -d
+mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+```
+
+The app starts on <http://localhost:8080>.
+
+- Swagger UI: <http://localhost:8080/swagger-ui.html>
+- OpenAPI JSON: <http://localhost:8080/v3/api-docs>
+
+Quick calls:
+
+```bash
+B=http://localhost:8080/api/v1/time-deposits
+curl "$B"                       # all deposits
+curl "$B?scope=basic"           # fewer fields
+curl -i -X PUT "$B/balances"    # apply interest
+```
+
+## Architecture overview
+
+Hexagonal (ports and adapters):
+
+```
+Inbound adapter (REST)  ->  Use-case ports  ->  Application service  ->  Outbound ports  ->  JPA adapters  ->  DB
+```
+
+- **Domain**: `TimeDeposit`, `TimeDepositCalculator`, interest policies (`PlanType` enum + `InterestPolicy`).
+- **Application**: use-case ports (`application.port.in`), the service (caching, transactions, batching),
+  and repository ports (`application.port.out`).
+- **Adapters**: web controller/DTOs (`adapter.in.web`) and JPA persistence (`adapter.out.persistence`).
+- **Database**: H2 (`local`) or PostgreSQL (`postgres`) — a configuration change only.
+
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for details.
+
+## Scalability
+
+Batched updates, a single transaction per run, a cross-instance DB lock, keyset pagination, a short-lived
+GET cache, a circuit breaker with a last-known-response fallback, and per-instance rate limiting.
+See [`SCALABILITY.md`](SCALABILITY.md).
+
+## AI-assisted development
+
+Tools, prompts and how AI output was validated: see [`AI_WORKFLOW.md`](AI_WORKFLOW.md).
+
+## Further documentation (in `java/`)
+
+- [`java/HOW_TO_RUN.md`](java/HOW_TO_RUN.md) — detailed run guide, configuration, request flows.
+- [`java/systemDesign.md`](java/systemDesign.md) — full system design.
+- [`java/instruction.md`](java/instruction.md) — problem statement and approach.
+
