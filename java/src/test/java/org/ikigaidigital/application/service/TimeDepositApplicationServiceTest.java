@@ -43,7 +43,7 @@ class TimeDepositApplicationServiceTest {
     }
 
     @Test
-    void updateAllBalances_whenMultipleBatches_thenEachBatchProcessedOnceUnderTheLock() {
+    void testUpdateAllBalances_whenMultipleBatches_thenEachBatchProcessedOnceUnderTheLock() {
         List<TimeDeposit> deposits = List.of(
                 new TimeDeposit(1, "basic", 1200.0, 45),
                 new TimeDeposit(2, "student", 1200.0, 100),
@@ -67,7 +67,7 @@ class TimeDepositApplicationServiceTest {
     }
 
     @Test
-    void updateAllBalances_whenSameIdempotencyKeyTwice_thenInterestAppliedOnce() {
+    void testUpdateAllBalances_whenSameIdempotencyKeyTwice_thenInterestAppliedOnce() {
         TimeDeposit deposit = new TimeDeposit(1, "basic", 1200.0, 45);
         stubKeyset(List.of(deposit));
         when(updateRuns.isAlreadyApplied("2026-11")).thenReturn(false, true);
@@ -80,7 +80,7 @@ class TimeDepositApplicationServiceTest {
     }
 
     @Test
-    void updateAllBalances_whenCalledWithoutKeyTwice_thenInterestAppliedEachTime() {
+    void testUpdateAllBalances_whenCalledWithoutKeyTwice_thenInterestAppliedEachTime() {
         TimeDeposit deposit = new TimeDeposit(1, "basic", 1200.0, 45);
         stubKeyset(List.of(deposit));
 
@@ -93,7 +93,7 @@ class TimeDepositApplicationServiceTest {
     }
 
     @Test
-    void getAllTimeDeposits_whenCalled_thenReturnsRepositoryResult() {
+    void testGetAllTimeDeposits_whenCalled_thenReturnsRepositoryResult() {
         List<TimeDepositView> views = List.of(
                 new TimeDepositView(new TimeDeposit(1, "basic", 1000.0, 30), List.of()));
         when(repository.findAllWithWithdrawals()).thenReturn(views);
@@ -102,7 +102,7 @@ class TimeDepositApplicationServiceTest {
     }
 
     @Test
-    void getTimeDeposits_whenPageRequested_thenQueriesRepositoryPage() {
+    void testGetTimeDeposits_whenPageRequested_thenQueriesRepositoryPage() {
         List<TimeDepositView> page = List.of(
                 new TimeDepositView(new TimeDeposit(5, "premium", 1000.0, 90), List.of()));
         when(repository.findPageWithWithdrawals(4, 10)).thenReturn(page);
@@ -119,5 +119,3 @@ class TimeDepositApplicationServiceTest {
         });
     }
 }
-
-

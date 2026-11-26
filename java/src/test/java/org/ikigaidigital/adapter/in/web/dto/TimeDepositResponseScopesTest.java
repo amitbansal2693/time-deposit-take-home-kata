@@ -21,28 +21,28 @@ class TimeDepositResponseScopesTest {
             new TimeDepositResponseScopes(new ClassPathResource("dto/time-deposit-response-scopes.xml"));
 
     @Test
-    void project_whenBasicScope_thenReturnsOnlyBasicAttributes() {
+    void testProject_whenBasicScope_thenReturnsOnlyBasicAttributes() {
         Map<String, Object> projected = scopes.project(List.of(RESPONSE), Scope.BASIC).get(0);
 
         assertThat(projected).containsOnlyKeys("id", "planType", "balance");
     }
 
     @Test
-    void project_whenDefaultScope_thenIncludesWithdrawals() {
+    void testProject_whenDefaultScope_thenIncludesWithdrawals() {
         Map<String, Object> projected = scopes.project(List.of(RESPONSE), Scope.DEFAULT).get(0);
 
         assertThat(projected).containsOnlyKeys("id", "planType", "balance", "days", "withdrawals");
     }
 
     @Test
-    void project_whenFullScope_thenIncludesEveryAttribute() {
+    void testProject_whenFullScope_thenIncludesEveryAttribute() {
         Map<String, Object> projected = scopes.project(List.of(RESPONSE), Scope.FULL).get(0);
 
         assertThat(projected).containsOnlyKeys("id", "planType", "balance", "days", "withdrawals");
     }
 
     @Test
-    void project_whenProjecting_thenKeepsOriginalValueTypes() {
+    void testProject_whenProjecting_thenKeepsOriginalValueTypes() {
         Map<String, Object> projected = scopes.project(List.of(RESPONSE), Scope.BASIC).get(0);
 
         assertThat(projected.get("balance")).isEqualTo(1000.0);
@@ -50,7 +50,7 @@ class TimeDepositResponseScopesTest {
     }
 
     @Test
-    void constructor_whenScopeEnumConstantMissingFromXml_thenThrows() {
+    void testConstructor_whenScopeEnumConstantMissingFromXml_thenThrows() {
         // Only basic/default defined; the FULL enum constant has no matching <scope>.
         assertThatThrownBy(() -> definition(
                 "<scope name=\"basic\"><attribute name=\"id\"/></scope>"
@@ -60,7 +60,7 @@ class TimeDepositResponseScopesTest {
     }
 
     @Test
-    void constructor_whenAttributeNotAResponseField_thenThrows() {
+    void testConstructor_whenAttributeNotAResponseField_thenThrows() {
         assertThatThrownBy(() -> definition(
                 "<scope name=\"basic\"><attribute name=\"nope\"/></scope>"
                         + "<scope name=\"default\" extends=\"basic\"/><scope name=\"full\" allAttributes=\"true\"/>"))
@@ -69,7 +69,7 @@ class TimeDepositResponseScopesTest {
     }
 
     @Test
-    void constructor_whenCyclicInheritance_thenThrows() {
+    void testConstructor_whenCyclicInheritance_thenThrows() {
         assertThatThrownBy(() -> definition(
                 "<scope name=\"basic\" extends=\"full\"/><scope name=\"default\" extends=\"basic\"/>"
                         + "<scope name=\"full\" extends=\"default\"/>"))
@@ -82,4 +82,3 @@ class TimeDepositResponseScopesTest {
         return new TimeDepositResponseScopes(new ByteArrayResource(xml.getBytes()));
     }
 }
-

@@ -28,4 +28,3 @@ class InterestPolicyRegistryTest {
         assertThat(registry.resolve(null).calculateMonthlyInterest(new TimeDeposit(1, "gold", 1000.0, 100))).isZero();
     }
 }
-

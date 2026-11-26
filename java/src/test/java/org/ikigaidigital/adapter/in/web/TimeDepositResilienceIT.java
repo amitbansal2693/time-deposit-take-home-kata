@@ -81,12 +81,10 @@ class TimeDepositResilienceIT {
     }
 
     @Test
-    void updateBalances_whenRateLimitExceeded_thenTooManyRequests() throws Exception {
+    void testUpdateBalances_whenRateLimitExceeded_thenTooManyRequests() throws Exception {
         when(updateAllBalances.updateAllBalances(any())).thenReturn(BalanceUpdateResult.APPLIED);
 
         mockMvc.perform(put(DEPOSITS + "/balances")).andExpect(status().isNoContent());
         mockMvc.perform(put(DEPOSITS + "/balances")).andExpect(status().isTooManyRequests());
     }
 }
-
-

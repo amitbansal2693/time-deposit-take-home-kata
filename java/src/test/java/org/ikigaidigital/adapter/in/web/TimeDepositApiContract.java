@@ -136,12 +136,10 @@ abstract class TimeDepositApiContract {
     }
 
     @Test
-    void getTimeDeposits_whenCorrelationIdHeader_thenEchoedOtherwiseGenerated() throws Exception {
+    void testGetTimeDeposits_whenCorrelationIdHeader_thenEchoedOtherwiseGenerated() throws Exception {
         mockMvc.perform(get(DEPOSITS).header("X-Correlation-Id", "abc-123"))
                 .andExpect(header().string("X-Correlation-Id", "abc-123"));
         mockMvc.perform(get(DEPOSITS))
                 .andExpect(header().string("X-Correlation-Id", notNullValue()));
     }
 }
-
-

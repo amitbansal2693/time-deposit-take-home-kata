@@ -10,13 +10,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TimeDepositApiPropertiesTest {
 
     @Test
-    void constructor_whenMaxIdempotencyKeyLengthWithinColumnSize_thenAccepted() {
+    void testConstructor_whenMaxIdempotencyKeyLengthWithinColumnSize_thenAccepted() {
         assertThatCode(() -> properties(1)).doesNotThrowAnyException();
         assertThatCode(() -> properties(100)).doesNotThrowAnyException();
     }
 
     @Test
-    void constructor_whenMaxIdempotencyKeyLengthOutsideColumnSize_thenThrows() {
+    void testConstructor_whenMaxIdempotencyKeyLengthOutsideColumnSize_thenThrows() {
         assertThatThrownBy(() -> properties(0)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> properties(101))
                 .isInstanceOf(IllegalArgumentException.class)
