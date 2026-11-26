@@ -1,57 +1,58 @@
 # AI-Assisted Workflow
 
-This exercise was completed with an AI coding assistant used as a pair-programmer. This document records
-the tools, how they were configured, which parts were AI-assisted, and how the output was validated.
+The solution was designed and driven by me; an AI coding assistant was used as a targeted helper for
+boilerplate, first drafts and test scaffolding. Every design decision, trade-off and final version was
+made and reviewed by me. This document records the tools, how they were used, and how AI output was checked.
 
 ## Tools
 
 | Tool | Role |
 |---|---|
-| GitHub Copilot (agent mode) | Code generation, refactoring, test writing, documentation. |
-| JetBrains IntelliJ IDEA | IDE, Maven build, running tests. |
-| Maven + JUnit 5 / Mockito / Testcontainers | Build and automated validation of AI-produced code. |
+| GitHub Copilot (agent mode) | Suggestions, boilerplate, draft tests and docs — always reviewed before keeping. |
+| JetBrains IntelliJ IDEA | Primary development, debugging, Maven build, running tests. |
+| Maven + JUnit 5 / Mockito / Testcontainers | My validation harness for anything AI drafted. |
 
-## How it was set up
+## How I worked
 
-- Worked in the IDE with the assistant in an agentic loop: describe a goal → the agent edits files and runs
-  `mvn clean verify` → review the diff and test results → iterate.
-- The repository `Readme.md` (the original assignment) was treated as the fixed source of truth and never
-  modified; the assistant was explicitly told which files must not change
-  (`TimeDeposit`, `TimeDepositCalculator.updateBalance`).
+- I decided the architecture (hexagonal), the scalability approach, the interest-policy design, the API
+  contract, the configuration model and the test strategy.
+- I used the assistant in short loops for mechanical work: describe a small goal → let it draft → **I review
+  the diff, correct it, and keep only what fits** → run `mvn clean verify`.
+- I treated the original `Readme.md` as the fixed spec and never changed it, and I kept the shared
+  `TimeDeposit` / `TimeDepositCalculator.updateBalance` signature fixed as the assignment requires.
 
-## Guardrails / instructions given to the assistant
+## Guardrails I set for the assistant
 
-- Keep exactly two endpoints; do not add more.
-- Do not change the shared `TimeDeposit` class or the `updateBalance(List<TimeDeposit>)` signature.
-- Preserve the original interest results and rounding (verified by tests).
-- Prefer hexagonal architecture, constants over magic values, and configuration over hard-coded values.
+- Keep exactly two endpoints; don't add more.
+- Don't change the shared `TimeDeposit` class or the `updateBalance(List<TimeDeposit>)` signature.
+- Preserve the original interest results and rounding (I verify this with tests).
+- Hexagonal layering, constants over magic values, configuration over hard-coded values.
 - Every change must keep `mvn clean verify` green.
-- Tests must cover all interest boundaries and nearby dates; name tests `testMethod_whenCondition_thenResult`.
+- Interest tests must cover each boundary and the days around it.
 
-## What was AI-assisted (and why)
+## Split of work
 
-| Area | AI-assisted | Reason |
+| Area | Who led | How AI helped |
 |---|---|---|
-| Hexagonal scaffolding (ports, adapters, service) | Yes | Repetitive boilerplate; fast to generate and review. |
-| Interest policies + `PlanType` enum | Yes | Clear pattern; AI applied it consistently. |
-| Scalability features (batching, keyset paging, lock, idempotency, cache, circuit breaker, rate limit) | Yes | Well-known patterns the assistant could assemble quickly. |
-| Tests (unit, Mockito, parameterized boundaries, Testcontainers) | Yes | Broad coverage generated fast, then reviewed. |
-| Documentation (this file, README, ARCHITECTURE, SCALABILITY, HOW_TO_RUN) | Yes | Drafted by AI, edited for accuracy. |
-| Business rules and final design decisions | Human-reviewed | Correctness and trade-offs confirmed by a person. |
+| Architecture, package layout, design decisions | Me | Occasional suggestions; I chose the structure. |
+| Interest rules and correctness (boundaries, rounding) | Me | Drafted policy classes; I verified values against the kata. |
+| Scalability design (batching, lock, idempotency, paging, cache, resilience) | Me | Drafted well-known patterns; I decided what to include and tuned it. |
+| Tests (unit, Mockito, parameterized boundaries, Testcontainers) | Me | Generated first drafts; I fixed gaps and added boundary cases. |
+| Boilerplate (DTOs, mappers, config wiring) | AI drafted | I reviewed and adjusted. |
+| Documentation | AI drafted | I edited for accuracy and trimmed. |
 
-## How AI output was validated
+## How I validated AI output
 
-- `mvn clean verify` after every change — unit and integration tests must pass.
-- Interest results asserted against the original kata values (e.g. `1235595.81`) so refactoring cannot change
+- `mvn clean verify` after every change — all unit and integration tests must pass.
+- Interest results asserted against the original kata values (e.g. `1235595.81`) so refactoring can't change
   behaviour.
 - Boundary tests at the exact day thresholds and the days immediately around them for each plan.
-- Integration tests run the same API contract on both H2 and a real PostgreSQL container, confirming
-  portability.
-- Manual review of every diff; magic values and hard-coded config were pulled into constants/properties.
+- The same API contract runs on H2 and on a real PostgreSQL container to confirm portability.
+- I read every diff; where AI used magic values or hard-coded config, I moved them into constants/properties.
 
 ## Reproducibility
 
-1. Open the `java/` project in an IDE with an AI coding assistant.
-2. Provide the guardrails above as the system/task instructions.
-3. Drive changes goal-by-goal, running `mvn clean verify` each time and reviewing the diff before accepting.
+1. Open the `java/` project in an IDE with an AI assistant.
+2. Provide the guardrails above as the task instructions.
+3. Work goal-by-goal, running `mvn clean verify` each time and reviewing each diff before accepting.
 
